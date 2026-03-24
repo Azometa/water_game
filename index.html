@@ -1,1 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Charity: Water Game Prototype</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="game-container">
+    <header>
+      <h1>💧 Charity: Water Drop Challenge</h1>
+      <p class="subtitle">
+        Help collect clean water drops for communities in need.
+      </p>
+    </header>
 
+    <section class="scoreboard">
+      <div class="score-box">
+        <h2>Score</h2>
+        <p id="score">0</p>
+      </div>
+
+      <div class="score-box">
+        <h2>Time Left</h2>
+        <p id="timer">20</p>
+      </div>
+
+      <div class="score-box">
+        <h2>Goal</h2>
+        <p>10</p>
+      </div>
+    </section>
+
+    <section class="instructions">
+      <h3>How to Play</h3>
+      <p>
+        Click the water drop as many times as you can before time runs out.
+        Reach 10 points to win.
+      </p>
+    </section>
+
+    <section class="game-area">
+      <button id="dropButton" class="drop-button" aria-label="Water drop button">
+        💧
+      </button>
+    </section>
+
+    <section class="controls">
+      <button id="startButton" class="control-btn">Start Game</button>
+      <button id="resetButton" class="control-btn">Reset Game</button>
+    </section>
+
+    <section class="message-area">
+      <p id="message">Press "Start Game" to begin.</p>
+    </section>
+
+    <section id="celebration" class="celebration hidden">
+      <h2>🎉 You Win! 🎉</h2>
+      <p>You collected enough clean water drops!</p>
+    </section>
+
+    <footer>
+      <p>
+        Theme inspired by supporting access to clean water through technology and awareness.
+      </p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
