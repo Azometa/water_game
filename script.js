@@ -1,122 +1,240 @@
-let score = 0;
-let timeLeft = 20;
-let gameStarted = false;
-let gameEnded = false;
-let timerInterval = null;
-
 const scoreDisplay = document.getElementById("score");
 const timerDisplay = document.getElementById("timer");
+const goalDisplay = document.getElementById("goalDisplay");
+const difficultyDisplay = document.getElementById("difficultyDisplay");
 const messageDisplay = document.getElementById("message");
-const dropButton = document.getElementById("dropButton");
+const milestoneDisplay = document.getElementById("milestone");
+
 const startButton = document.getElementById("startButton");
 const resetButton = document.getElementById("resetButton");
+
+const cleanDrop = document.getElementById("cleanDrop");
+const dirtyDrop = document.getElementById("dirtyDrop");
+const gameArea = document.getElementById("gameArea");
+
 const celebrationBox = document.getElementById("celebration");
-const gameArea = document.querySelector(".game-area");
+const gameOverBox = document.getElementById("gameOverBox");
 
-function updateScore() {
+const difficultyButtons = document.querySelectorAll(".difficulty-btn");
+
+const difficultySettings = {
+  easy: {
+    name: "Easy",
+    time: 25,
+    goal: 8,
+    cleanMoveSpeed: 1200,
+    dirtyMoveSpeed: 1800,
+    dirtyPenalty: 1
+  },
+  normal: {
+    name: "Normal",
+    time: 20,
+    goal: 10,
+    cleanMoveSpeed: 900,
+    dirtyMoveSpeed: 1400,
+    dirtyPenalty: 1
+  },
+  hard: {
+    name: "Hard",
+    time: 15,
+    goal: 13,
+    cleanMoveSpeed: 700,
+    dirtyMoveSpeed: 1000,
+    dirtyPenalty: 2
+  }
+};
+
+const milestoneMessages = [
+  { score: 3, text: "Nice start! Keep collecting clean water." },
+  { score: 5, text: "Great job! You're building momentum." },
+  { score: 8, text: "Halfway there!" },
+  { score: 10, text: "Amazing work! You're close to the goal." }
+];
+
+let selectedMode = "normal";
+let score = 0;
+let timeLeft = difficultySettings[selectedMode].time;
+let goal = difficultySettings[selectedMode].goal;
+let gameStarted = false;
+
+let timerInterval = null;
+let cleanMoveInterval = null;
+let dirtyMoveInterval = null;
+
+function updateBoard() {
   scoreDisplay.textContent = score;
-}
-
-function updateTimer() {
   timerDisplay.textContent = timeLeft;
+  goalDisplay.textContent = goal;
+  difficultyDisplay.textContent = difficultySettings[selectedMode].name;
 }
 
-function showMessage(text) {
-  messageDisplay.textContent = text;
+function setDifficulty(mode) {
+  if (gameStarted) return;
+
+  selectedMode = mode;
+  timeLeft = difficultySettings[mode].time;
+  goal = difficultySettings[mode].goal;
+
+  difficultyButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.mode === mode);
+  });
+
+  updateBoard();
+  milestoneDisplay.classList.add("hidden");
+  milestoneDisplay.textContent = "";
+  messageDisplay.textContent = `Difficulty set to ${difficultySettings[mode].name}. Press "Start Game" to begin.`;
 }
 
-function moveDropRandomly() {
+function getRandomPosition(buttonSize = 82) {
   const areaWidth = gameArea.clientWidth;
   const areaHeight = gameArea.clientHeight;
-  const buttonWidth = dropButton.offsetWidth;
-  const buttonHeight = dropButton.offsetHeight;
 
-  const maxX = areaWidth - buttonWidth - 10;
-  const maxY = areaHeight - buttonHeight - 10;
+  const maxX = areaWidth - buttonSize;
+  const maxY = areaHeight - buttonSize;
 
-  const randomX = Math.max(10, Math.floor(Math.random() * maxX));
-  const randomY = Math.max(10, Math.floor(Math.random() * maxY));
+  const x = Math.floor(Math.random() * Math.max(maxX, 1));
+  const y = Math.floor(Math.random() * Math.max(maxY, 1));
 
-  dropButton.style.left = `${randomX}px`;
-  dropButton.style.top = `${randomY}px`;
+  return { x, y };
 }
 
-function endGame() {
-  gameEnded = true;
-  gameStarted = false;
-  clearInterval(timerInterval);
-  dropButton.disabled = true;
+function positionElement(element, buttonSize = 82) {
+  const { x, y } = getRandomPosition(buttonSize);
+  element.style.left = `${x}px`;
+  element.style.top = `${y}px`;
+}
 
-  if (score >= 10) {
-    showMessage("Amazing job! You collected enough water drops.");
-    celebrationBox.classList.remove("hidden");
-  } else {
-    showMessage("Time is up. Try again and reach 10 points.");
-    celebrationBox.classList.add("hidden");
+function showMilestone() {
+  const foundMilestone = milestoneMessages.find((item) => item.score === score);
+
+  if (foundMilestone) {
+    milestoneDisplay.textContent = foundMilestone.text;
+    milestoneDisplay.classList.remove("hidden");
   }
 }
 
 function startGame() {
-  if (gameStarted) {
-    return;
-  }
+  if (gameStarted) return;
 
-  score = 0;
-  timeLeft = 20;
   gameStarted = true;
-  gameEnded = false;
+  score = 0;
+  timeLeft = difficultySettings[selectedMode].time;
+  goal = difficultySettings[selectedMode].goal;
 
-  updateScore();
-  updateTimer();
-  showMessage("Game started! Click the water drop.");
   celebrationBox.classList.add("hidden");
-  dropButton.disabled = false;
-  moveDropRandomly();
+  gameOverBox.classList.add("hidden");
+  milestoneDisplay.classList.add("hidden");
+  milestoneDisplay.textContent = "";
 
-  clearInterval(timerInterval);
+  updateBoard();
+  messageDisplay.textContent =
+    "Game started! Click clean drops and avoid dirty droplets.";
+
+  cleanDrop.classList.remove("hidden");
+  dirtyDrop.classList.remove("hidden");
+
+  positionElement(cleanDrop);
+  positionElement(dirtyDrop);
+
   timerInterval = setInterval(() => {
     timeLeft--;
-    updateTimer();
+    timerDisplay.textContent = timeLeft;
 
     if (timeLeft <= 0) {
-      endGame();
+      endGame(score >= goal);
     }
   }, 1000);
+
+  cleanMoveInterval = setInterval(() => {
+    positionElement(cleanDrop);
+  }, difficultySettings[selectedMode].cleanMoveSpeed);
+
+  dirtyMoveInterval = setInterval(() => {
+    positionElement(dirtyDrop);
+  }, difficultySettings[selectedMode].dirtyMoveSpeed);
+}
+
+function endGame(didWin) {
+  clearInterval(timerInterval);
+  clearInterval(cleanMoveInterval);
+  clearInterval(dirtyMoveInterval);
+
+  gameStarted = false;
+
+  cleanDrop.classList.add("hidden");
+  dirtyDrop.classList.add("hidden");
+
+  if (didWin) {
+    celebrationBox.classList.remove("hidden");
+    gameOverBox.classList.add("hidden");
+    messageDisplay.textContent =
+      "Excellent work! You reached the clean water goal.";
+  } else {
+    celebrationBox.classList.add("hidden");
+    gameOverBox.classList.remove("hidden");
+    messageDisplay.textContent =
+      "Time is up. Reset the game and try again.";
+  }
 }
 
 function resetGame() {
   clearInterval(timerInterval);
-  score = 0;
-  timeLeft = 20;
+  clearInterval(cleanMoveInterval);
+  clearInterval(dirtyMoveInterval);
+
   gameStarted = false;
-  gameEnded = false;
+  score = 0;
+  timeLeft = difficultySettings[selectedMode].time;
+  goal = difficultySettings[selectedMode].goal;
 
-  updateScore();
-  updateTimer();
-  showMessage('Press "Start Game" to begin.');
+  cleanDrop.classList.add("hidden");
+  dirtyDrop.classList.add("hidden");
   celebrationBox.classList.add("hidden");
-  dropButton.disabled = true;
+  gameOverBox.classList.add("hidden");
+  milestoneDisplay.classList.add("hidden");
+  milestoneDisplay.textContent = "";
 
-  dropButton.style.left = "40%";
-  dropButton.style.top = "35%";
+  updateBoard();
+  messageDisplay.textContent = 'Press "Start Game" to begin.';
 }
 
-dropButton.addEventListener("click", () => {
-  if (!gameStarted || gameEnded) {
-    return;
+cleanDrop.addEventListener("click", () => {
+  if (!gameStarted) return;
+
+  score += 1;
+  scoreDisplay.textContent = score;
+
+  positionElement(cleanDrop);
+  showMilestone();
+
+  if (score >= goal) {
+    endGame(true);
+  }
+});
+
+dirtyDrop.addEventListener("click", () => {
+  if (!gameStarted) return;
+
+  score -= difficultySettings[selectedMode].dirtyPenalty;
+
+  if (score < 0) {
+    score = 0;
   }
 
-  score++;
-  updateScore();
-  moveDropRandomly();
+  scoreDisplay.textContent = score;
+  messageDisplay.textContent =
+    "Oops! That was a dirty droplet. Avoid those.";
 
-  if (score >= 10) {
-    endGame();
-  }
+  positionElement(dirtyDrop);
 });
 
 startButton.addEventListener("click", startGame);
 resetButton.addEventListener("click", resetGame);
 
-// Initial state
-resetGame();
+difficultyButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setDifficulty(button.dataset.mode);
+  });
+});
+
+updateBoard();
