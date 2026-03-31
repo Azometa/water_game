@@ -3,129 +3,133 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Charity: Water Drop Challenge</title>
+  <title>Water Drop Challenge</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
   />
 
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="game-container">
-    <header class="hero">
-      <p class="eyebrow">charity: water inspired game</p>
-      <h1>💧 Water Drop Challenge</h1>
-      <p class="subtitle">
-        Collect clean water drops and avoid dirty droplets. Reach the goal before
-        time runs out to spread awareness about access to clean water.
-      </p>
-    </header>
+  <main class="page-shell">
+    <div class="game-card">
+      <header class="hero">
+        <p class="eyebrow">CHARITY: WATER INSPIRED GAME</p>
+        <h1>💧 Water Drop Challenge</h1>
+        <p class="subtitle">
+          Collect clean water drops and avoid dirty droplets. Reach the goal
+          before time runs out to spread awareness about access to clean water.
+        </p>
+      </header>
 
-    <section class="scoreboard">
-      <div class="score-box">
-        <h2>Score</h2>
-        <p id="score">0</p>
-      </div>
+      <section class="stats-grid">
+        <article class="stat-box">
+          <h2>Score</h2>
+          <p id="score">0</p>
+        </article>
 
-      <div class="score-box">
-        <h2>Time Left</h2>
-        <p id="timer">20</p>
-      </div>
+        <article class="stat-box">
+          <h2>Time Left</h2>
+          <p id="timer">20</p>
+        </article>
 
-      <div class="score-box">
-        <h2>Goal</h2>
-        <p id="goalDisplay">10</p>
-      </div>
+        <article class="stat-box">
+          <h2>Goal</h2>
+          <p id="goalDisplay">10</p>
+        </article>
 
-      <div class="score-box">
-        <h2>Difficulty</h2>
-        <p id="difficultyDisplay">Normal</p>
-      </div>
-    </section>
+        <article class="stat-box">
+          <h2>Difficulty</h2>
+          <p id="difficultyDisplay">Normal</p>
+        </article>
+      </section>
 
-    <section class="instructions">
-      <h3>How to Play</h3>
-      <p>
-        Click the <strong>clean blue water drops</strong> to earn points. Avoid the
-        <strong>dirty brown droplets</strong> because they lower your score.
-      </p>
-    </section>
+      <section class="content-section">
+        <h3>How to Play</h3>
+        <p class="body-text">
+          Click the <strong>clean blue drops</strong> to earn points. Avoid the
+          <strong>dirty brown droplets</strong> because they lower your score.
+          Reach the goal before the timer ends.
+        </p>
+      </section>
 
-    <section class="difficulty-panel">
-      <h3>Select Difficulty</h3>
-      <div class="difficulty-buttons">
-        <button class="difficulty-btn active" data-mode="easy">Easy</button>
-        <button class="difficulty-btn" data-mode="normal">Normal</button>
-        <button class="difficulty-btn" data-mode="hard">Hard</button>
-      </div>
-    </section>
+      <section class="content-section">
+        <h3>Select Difficulty</h3>
+        <div class="difficulty-buttons">
+          <button class="difficulty-btn" data-mode="easy" type="button">Easy</button>
+          <button class="difficulty-btn active" data-mode="normal" type="button">Normal</button>
+          <button class="difficulty-btn" data-mode="hard" type="button">Hard</button>
+        </div>
+      </section>
 
-    <section class="controls">
-      <button id="startButton" class="control-btn primary-btn">Start Game</button>
-      <button id="resetButton" class="control-btn">Reset Game</button>
-    </section>
+      <section class="controls-row">
+        <button id="startButton" class="action-btn start-btn" type="button">Start Game</button>
+        <button id="resetButton" class="action-btn reset-btn" type="button">Reset Game</button>
+      </section>
 
-    <section class="message-area">
-      <p id="message">Press "Start Game" to begin.</p>
-      <p id="milestone" class="milestone-text hidden"></p>
-    </section>
+      <section class="message-panel">
+        <p id="message">Press "Start Game" to begin.</p>
+        <p id="milestone" class="milestone hidden"></p>
+      </section>
 
-    <section class="game-area" id="gameArea" aria-label="Game area">
-      <button
-        id="cleanDrop"
-        class="drop-button clean-drop hidden"
-        aria-label="Clean water drop"
-      >
-        💧
-      </button>
+      <section class="legend">
+        <div class="legend-item">
+          <span class="legend-drop legend-clean"></span>
+          <span>Clean drop = +1 point</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-drop legend-dirty"></span>
+          <span>Dirty droplet = penalty</span>
+        </div>
+      </section>
 
-      <button
-        id="dirtyDrop"
-        class="drop-button dirty-drop hidden"
-        aria-label="Dirty water droplet"
-      >
-        🟤
-      </button>
-    </section>
+      <section id="gameArea" class="game-area" aria-label="Game area">
+        <div class="water-background"></div>
 
-    <section id="celebration" class="celebration hidden">
-      <h2>🎉 You Win! 🎉</h2>
-      <p>You collected enough clean water drops to reach the goal.</p>
-    </section>
-
-    <section id="gameOverBox" class="game-over hidden">
-      <h2>⏰ Time's Up!</h2>
-      <p>You ran out of time. Reset and try again.</p>
-    </section>
-
-    <footer class="footer">
-      <p>
-        Inspired by charity: water’s mission to bring clean and safe water to
-        people in need.
-      </p>
-
-      <div class="footer-links">
-        <a
-          href="https://www.charitywater.org/about"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          id="cleanDrop"
+          class="drop clean-drop hidden"
+          type="button"
+          aria-label="Clean water drop"
         >
-          Learn About charity: water
-        </a>
-        <a
-          href="https://www.charitywater.org/donate"
-          target="_blank"
-          rel="noopener noreferrer"
+          💧
+        </button>
+
+        <button
+          id="dirtyDrop"
+          class="drop dirty-drop hidden"
+          type="button"
+          aria-label="Dirty droplet"
         >
-          Donate
-        </a>
-      </div>
-    </footer>
-  </div>
+          💧
+        </button>
+      </section>
+
+      <section id="celebration" class="result-box win-box hidden">
+        <h2>🎉 You Win!</h2>
+        <p>You reached the clean water goal before time ran out.</p>
+      </section>
+
+      <section id="gameOverBox" class="result-box lose-box hidden">
+        <h2>⏰ Time’s Up!</h2>
+        <p>You did not reach the goal this round. Reset and try again.</p>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Inspired by charity: water’s mission to help provide clean and safe water.
+        </p>
+        <div class="footer-links">
+          <a href="https://www.charitywater.org/about" target="_blank" rel="noopener noreferrer">Learn More</a>
+          <a href="https://www.charitywater.org/donate" target="_blank" rel="noopener noreferrer">Donate</a>
+        </div>
+      </footer>
+    </div>
+  </main>
 
   <script src="script.js"></script>
 </body>
