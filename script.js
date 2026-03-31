@@ -23,32 +23,32 @@ const difficultySettings = {
     time: 25,
     goal: 8,
     cleanMoveSpeed: 1200,
-    dirtyMoveSpeed: 1800,
-    dirtyPenalty: 1
+    dirtyMoveSpeed: 1700,
+    penalty: 1
   },
   normal: {
     name: "Normal",
     time: 20,
     goal: 10,
     cleanMoveSpeed: 900,
-    dirtyMoveSpeed: 1400,
-    dirtyPenalty: 1
+    dirtyMoveSpeed: 1350,
+    penalty: 1
   },
   hard: {
     name: "Hard",
     time: 15,
     goal: 13,
-    cleanMoveSpeed: 700,
+    cleanMoveSpeed: 650,
     dirtyMoveSpeed: 1000,
-    dirtyPenalty: 2
+    penalty: 2
   }
 };
 
 const milestoneMessages = [
-  { score: 3, text: "Nice start! Keep collecting clean water." },
-  { score: 5, text: "Great job! You're building momentum." },
+  { score: 3, text: "Nice start! Keep collecting clean drops." },
+  { score: 5, text: "Great job! You are building momentum." },
   { score: 8, text: "Halfway there!" },
-  { score: 10, text: "Amazing work! You're close to the goal." }
+  { score: 10, text: "Amazing work! You are close to the goal." }
 ];
 
 let selectedMode = "normal";
@@ -68,6 +68,12 @@ function updateBoard() {
   difficultyDisplay.textContent = difficultySettings[selectedMode].name;
 }
 
+function clearGameIntervals() {
+  clearInterval(timerInterval);
+  clearInterval(cleanMoveInterval);
+  clearInterval(dirtyMoveInterval);
+}
+
 function setDifficulty(mode) {
   if (gameStarted) return;
 
@@ -85,30 +91,38 @@ function setDifficulty(mode) {
   messageDisplay.textContent = `Difficulty set to ${difficultySettings[mode].name}. Press "Start Game" to begin.`;
 }
 
-function getRandomPosition(buttonSize = 82) {
-  const areaWidth = gameArea.clientWidth;
-  const areaHeight = gameArea.clientHeight;
-
-  const maxX = areaWidth - buttonSize;
-  const maxY = areaHeight - buttonSize;
-
-  const x = Math.floor(Math.random() * Math.max(maxX, 1));
-  const y = Math.floor(Math.random() * Math.max(maxY, 1));
-
-  return { x, y };
+function getDropSize(element) {
+  return {
+    width: element.offsetWidth || 78,
+    height: element.offsetHeight || 96
+  };
 }
 
-function positionElement(element, buttonSize = 82) {
-  const { x, y } = getRandomPosition(buttonSize);
+function getRandomPosition(element) {
+  const areaWidth = gameArea.clientWidth;
+  const areaHeight = gameArea.clientHeight;
+  const { width, height } = getDropSize(element);
+
+  const maxX = Math.max(0, areaWidth - width);
+  const maxY = Math.max(0, areaHeight - height);
+
+  return {
+    x: Math.floor(Math.random() * (maxX + 1)),
+    y: Math.floor(Math.random() * (maxY + 1))
+  };
+}
+
+function moveElement(element) {
+  const { x, y } = getRandomPosition(element);
   element.style.left = `${x}px`;
   element.style.top = `${y}px`;
 }
 
 function showMilestone() {
-  const foundMilestone = milestoneMessages.find((item) => item.score === score);
+  const matched = milestoneMessages.find((item) => item.score === score);
 
-  if (foundMilestone) {
-    milestoneDisplay.textContent = foundMilestone.text;
+  if (matched) {
+    milestoneDisplay.textContent = matched.text;
     milestoneDisplay.classList.remove("hidden");
   }
 }
@@ -121,23 +135,24 @@ function startGame() {
   timeLeft = difficultySettings[selectedMode].time;
   goal = difficultySettings[selectedMode].goal;
 
+  clearGameIntervals();
+
   celebrationBox.classList.add("hidden");
   gameOverBox.classList.add("hidden");
   milestoneDisplay.classList.add("hidden");
   milestoneDisplay.textContent = "";
 
   updateBoard();
-  messageDisplay.textContent =
-    "Game started! Click clean drops and avoid dirty droplets.";
+  messageDisplay.textContent = "Game started! Click clean drops and avoid dirty droplets.";
 
   cleanDrop.classList.remove("hidden");
   dirtyDrop.classList.remove("hidden");
 
-  positionElement(cleanDrop);
-  positionElement(dirtyDrop);
+  moveElement(cleanDrop);
+  moveElement(dirtyDrop);
 
   timerInterval = setInterval(() => {
-    timeLeft--;
+    timeLeft -= 1;
     timerDisplay.textContent = timeLeft;
 
     if (timeLeft <= 0) {
@@ -146,19 +161,16 @@ function startGame() {
   }, 1000);
 
   cleanMoveInterval = setInterval(() => {
-    positionElement(cleanDrop);
+    moveElement(cleanDrop);
   }, difficultySettings[selectedMode].cleanMoveSpeed);
 
   dirtyMoveInterval = setInterval(() => {
-    positionElement(dirtyDrop);
+    moveElement(dirtyDrop);
   }, difficultySettings[selectedMode].dirtyMoveSpeed);
 }
 
 function endGame(didWin) {
-  clearInterval(timerInterval);
-  clearInterval(cleanMoveInterval);
-  clearInterval(dirtyMoveInterval);
-
+  clearGameIntervals();
   gameStarted = false;
 
   cleanDrop.classList.add("hidden");
@@ -167,21 +179,16 @@ function endGame(didWin) {
   if (didWin) {
     celebrationBox.classList.remove("hidden");
     gameOverBox.classList.add("hidden");
-    messageDisplay.textContent =
-      "Excellent work! You reached the clean water goal.";
+    messageDisplay.textContent = "Excellent work! You reached the goal.";
   } else {
     celebrationBox.classList.add("hidden");
     gameOverBox.classList.remove("hidden");
-    messageDisplay.textContent =
-      "Time is up. Reset the game and try again.";
+    messageDisplay.textContent = "Time is up. Reset the game and try again.";
   }
 }
 
 function resetGame() {
-  clearInterval(timerInterval);
-  clearInterval(cleanMoveInterval);
-  clearInterval(dirtyMoveInterval);
-
+  clearGameIntervals();
   gameStarted = false;
   score = 0;
   timeLeft = difficultySettings[selectedMode].time;
@@ -204,8 +211,8 @@ cleanDrop.addEventListener("click", () => {
   score += 1;
   scoreDisplay.textContent = score;
 
-  positionElement(cleanDrop);
   showMilestone();
+  moveElement(cleanDrop);
 
   if (score >= goal) {
     endGame(true);
@@ -215,17 +222,12 @@ cleanDrop.addEventListener("click", () => {
 dirtyDrop.addEventListener("click", () => {
   if (!gameStarted) return;
 
-  score -= difficultySettings[selectedMode].dirtyPenalty;
-
-  if (score < 0) {
-    score = 0;
-  }
+  score -= difficultySettings[selectedMode].penalty;
+  if (score < 0) score = 0;
 
   scoreDisplay.textContent = score;
-  messageDisplay.textContent =
-    "Oops! That was a dirty droplet. Avoid those.";
-
-  positionElement(dirtyDrop);
+  messageDisplay.textContent = "Oops! That was a dirty droplet.";
+  moveElement(dirtyDrop);
 });
 
 startButton.addEventListener("click", startGame);
